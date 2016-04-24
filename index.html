@@ -1,0 +1,316 @@
+<!DOCTYPE>
+<html>
+<head>
+
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="ciscobootstrap/css/bootstrap-theme.css">
+    <!--<apex:stylesheet value="{!URLFOR($Resource.newbootstrap, '/boot/css/bootstrap.css')}" />-->
+    <!--<apex:stylesheet value="{!URLFOR($Resource.ciscobootstrap, '/css/bootstrap-theme.css')}" />-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-resource.min.js"></script>
+    <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.0.js"></script>
+
+
+	<script src="appctrl.js"></script>
+
+  <link href="http://cdn.grapecity.com/spreadjs/hosted/css/gcspread.sheets.excel2013white.9.40.20153.0.css" rel="stylesheet" type="text/css"/>
+
+    <script src="http://code.jquery.com/jquery-1.8.2.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript" src="http://cdn.grapecity.com/spreadjs/hosted/scripts/gcspread.sheets.all.9.40.20153.0.min.js"></script>
+
+<script>
+
+$("#sidebar-hide-btn").click(function() {
+    $('#sidebar').hide();
+    $('#mapDiv').removeClass('col-lg-10');
+    $('#mapDiv').addClass('col-lg-12');
+});
+</script>
+
+<style>
+ul
+{
+//	list-style:none;
+    padding-left:15;
+}
+.filter-input{
+	font-style:italic;
+}
+.input-group{
+	width:800px;
+}
+
+table.datasheet {
+	width:100%;
+}
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;  
+//	white-space: nowrap;
+}
+.datasheet th {
+	padding:3px;
+	background-color:#ddd;
+	border-top:1px solid #eef;
+	border-left:1px solid #eef;
+	border-right:1px solid #999;
+	border-bottom:1px solid #999;
+	color:#003;
+	font-size:.9em;
+	font-weight:bold;
+}
+.datasheet th {
+	text-align:left;
+}
+.datasheet tr {
+	vertical-align:top;
+}
+.datasheet td {
+	padding:0px;
+	border-right:1px solid #999;
+	border-bottom:1px solid #999;
+	font-size:.9em;
+}
+.datasheet td input {
+	border:0px none;
+	width:100%;
+	height:100%;
+	//width:90%;
+	//height:90%;
+}
+.datasheet tbody th {
+	text-align:right;
+	padding:1px 3px 1px 1px;
+	color:#222;
+}
+
+.update-comment
+{
+	background-color: green;
+}
+.marked-for-deletion
+{
+	background-color: orange;
+}
+</style>
+
+</head>
+<body>
+<div class="container-fluid">
+<div ng-app="myApp" ng-controller="MyCtrl" id="div1">
+<nav class="navbar navbar-default" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="#"><span id="loginUserId" ng-model="loginUserId"></span></a>
+	<script>
+var param = location.search.substr(location.search.indexOf('=')+1);
+console.log("param : "+param);
+if (param)
+    document.getElementById("loginUserId").innerHTML = param;
+</script>
+
+  </div>
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+    <ul class="nav navbar-nav">
+      <li class="active"><a id="sidebar-hide-btn" ng-show="showSideBar" ng-click="showSideBar=!showSideBar">Hide Collab</a></li>
+      <li class="active"><a id="sidebar-hide-btn" ng-show="!showSideBar" ng-click="showSideBar=!showSideBar">Show Collab</a></li>
+<!--      <li><a href="#">Link</a></li>-->
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Action</a></li>
+          <li><a href="#">Another action</a></li>
+          <li><a href="#">Something else here</a></li>
+          <li class="divider"></li>
+          <li><a href="#">Separated link</a></li>
+          <li class="divider"></li>
+          <li><a href="#">One more separated link</a></li>
+        </ul>
+      </li>
+    </ul>
+    <div class="col-sm-3 col-md-3">
+        <form class="navbar-form" role="search">
+        <div class="input-group">
+            <input type="text" class="form-control" ng-model="searchString" ng-model-options="{debounce: 1000}" placeholder='Search: e.g. Enterprise or USD' ng-change="globalSearch()"/>
+            <div class="input-group-btn">
+                <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+            </div>
+        </div>
+        </form>
+    </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a title="Export to xls" style="color:green" href="#" class="glyphicon glyphicon-download-alt"></a></li>
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Action</a></li>
+          <li><a href="#">Another action</a></li>
+          <li><a href="#">Something else here</a></li>
+          <li class="divider"></li>
+          <li><a href="#">Separated link</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div><!-- /.navbar-collapse -->
+</nav>
+<div ng-show="showSideBar" class="col-lg-2" id="sidebar">
+<div>&nbsp;&nbsp;&nbsp;&nbsp;
+<div ng-show="showChangeStatsToggle"><b>Change History-</b> <br><ul><li ng-repeat="i in showChangeStats"><i>&nbsp;&nbsp;{{i}}</i></li></ul></div><br><br>
+<!--<span class="glyphicon glyphicon-stop" style="color:green" ></span> <a>Comments Updated ({{resultAggOptyTypeCode[0].doc_count}})</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<span class="glyphicon glyphicon-stop" style="color:orange"></span> <a>Marked for Deletion ({{resultAggOptyTheaterName[0].doc_count}})</a>
+-->
+<div>
+<table style="margin-left:10px" ng-repeat="j in collabData">
+<tr>
+<td><b>{{j.key}}</b></td></tr>
+<tr><td><small><span class="glyphicon glyphicon-stop" style="color:green" ></span> <a ng-click="">Comments Updated ({{j.group_by_updated.value}})</a></small></td></tr>
+<tr><td><small><span class="glyphicon glyphicon-stop" style="color:orange"></span> <a ng-click="">Marked for Deletion ({{j.group_by_marked.value}})</a></small></td></tr>
+<tr><td><small><span class="glyphicon glyphicon-stop" style="color:red"></span> <a ng-click="">Deleted ({{j.group_by_deleted.value}})</a></small></td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</div>
+</div>
+</div>
+<div ng-class="{'col-lg-10':showSideBar, 'col-lg-12':!showSideBar}" id="mapDiv">
+ <!-- Hello, {{name}}!-->
+  <my-directive></my-directive>
+
+	<div id="fixed" when-scrolled="loadMore()">
+<!--    <button type="Submit" ng-click="showDataAction();showtable = !showtable">
+   Show Records
+  </button>-->
+	<span style="float:right" ng-show="showtable">
+	
+			<b>Total Records:</b>  {{PostDataResponse.length}} of {{totalRecords}}
+
+	</span>
+ <div id="section" ng-show="showtable">
+	<div style="text-align:center" id="showMessage"><font color="red">{{deleteMessage}}</font></div>
+	</div>
+	<table class="datasheet">
+	<thead><th>&nbsp;&nbsp;</th>
+		<th style="padding:15px;width:40px">
+		<span><a href="#" class="glyphicon glyphicon-remove" style="color:orange" title="Mark for deletion" type="Submit" ng-click="markForDeletion();showDeleteMessage=!showDeleteMessage">
+		  </a></span> | 
+		<span><a href="#" class="glyphicon glyphicon-trash" style="color:red" title="Deleted selected records" type="Submit" ng-click="delSelectedData();showDeleteMessage=!showDeleteMessage">
+		  </a></span>
+		</th>
+		<th>
+            Score<br>
+		</th>
+		<th>Oppty Name
+		</th>
+		<th>Oppty Type
+		</th>
+		<th>Oppty Id
+		</th>
+		<th>Sales Path Cd
+		</th>
+		<th>Oppty Theater
+		</th>
+		<th>Created Date
+		</th>
+		<th>Sales Territory Name
+<!--		</th>
+		<th>Territory Id
+		</th>-->
+		<th>ISO Currency
+		</th>
+		<th style="text-align:center">
+		<span><a href="" class="glyphicon glyphicon-ok" style="color:green;horizontal-align:center" ng-click="updateComments();showDeleteMessage=!showDeleteMessage">
+		   </a><br>Comments</span>
+		   
+		</th>
+	</thead>
+	<tbody>
+		<tr><th></th>
+			<td>
+						&nbsp;Filters <span class="glyphicon glyphicon-arrow-right"></span>
+
+			</td>
+			<td><input type="text" size="5" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" ng-model="optySearch" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" ng-model="optyTheaterName" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" ng-model="salesTerrName" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" class="filter-input" placeholder="filter"></input>
+			</td>
+			<td><input type="text" class="filter-input" placeholder="filter"></input>
+			</td>
+		</tr>
+
+
+		<tr ng-repeat="i in PostDataResponse | filter: multifieldSearch">
+<th></th>
+		<td><input type="checkbox" value="{{i._id}}" ng-click="toggleSelection(i._id)" style="{text-align:center}">
+<!--<td>{{i._id}}-->
+			</td>
+
+			<td ng-class="{'update-comment':i._source.complex_deal_flag=='Y','marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y'}">{{i._score}}
+			</td>
+			<td style="width:50px" title={{i._source.opty_name}} class="trim-length"><a href="" ng-click="getChangeStats(i._id)" style="text-decoration: none;color:#000000;">{{i._source.opty_name}}</a>
+			</td>
+			<td class="trim-length">{{i._source.oppty_type_code}}
+			</td>
+			<td class="trim-length">{{i._source.opty_id}}
+			</td>
+			<td class="trim-length">{{i._source.sales_path_cd}}
+			</td>
+			<td class="trim-length">{{i._source.opty_theater_name}}
+			</td>
+			<td class="trim-length">{{i._source.create_date}}
+			</td>
+			<td class="trim-length">{{i._source.sales_terr_name}}
+			</td>
+<!--			<td class="col-xs-1">{{i._source.territory_id}}
+			</td>-->
+			<td class="trim-length">{{i._source.iso_currency_cd}}
+			</td>
+<!--			<td><textarea rows="2" cols="20" ng-change="updateComm(i._id)" ng-model="i._source.sales_hierarchy_type_cd" id="i._id">{{i._source.sales_hierarchy_type_cd}}</textarea>
+			</td>
+-->
+			<td><input type="text" ng-change="updateComm(i._id)" ng-model="i._source.sales_hierarchy_type_cd" id="i._id"></input>
+			</td>
+		</tr>
+	</tbody>
+	</table>
+</div>
+</div>
+
+</div>
+</div>
+<script>
+
+</script>
+</div>
+</body>
+</html>
+
+
+
