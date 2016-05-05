@@ -53,9 +53,149 @@ myApp.directive('whenScrolled', function() {
     };
 });
 
+myApp.directive('customDatepicker',function($compile,$timeout){
+        return {
+            replace:true,
+            templateUrl:'custom-datepicker.html',
+            scope: {
+                ngModel: '=',
+                dateOptions: '@',
+                dateDisabled: '@',
+                opened: '=',
+                min: '@',
+                max: '@',
+                popup: '@',
+                options: '@',
+                name: '@',
+                id: '@'
+            },
+            link: function($scope, $element, $attrs, $controller){
+
+            }    
+        };
+})
 
 
 myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(myService,$scope,$http,$timeout) {
+
+			$scope.birthDate = '2013-07-23';
+	        $scope.dateOptions = {};
+
+			var today = new Date();
+			today.setDate(today.getDate() + 7);
+
+			$scope.today=today;
+
+			$scope.convertToOpty = function(){
+
+					var convertToOptyQuery;
+					for(var i=0;i<$scope.selection.length;i++)
+					{
+						if(i==0)
+						{
+								console.log("i==0");
+								convertToOptyQuery=JSON.stringify(
+										{ "update" : {"_id" : $scope.selection[i], "_type" : "opportunityobj", "_index" : "optysor"}}
+										);
+								convertToOptyQuery=convertToOptyQuery+"\n";
+								convertToOptyQuery=convertToOptyQuery+JSON.stringify(
+										{ "doc" : {"cloud_deal" : "Y"}}
+										);
+							
+						}
+						else
+						{
+								convertToOptyQuery=convertToOptyQuery+"\n"+JSON.stringify(
+										{ "update" : {"_id" : $scope.selection[i], "_type" : "opportunityobj", "_index" : "optysor"}}
+										);
+								convertToOptyQuery=convertToOptyQuery+"\n";
+								convertToOptyQuery=convertToOptyQuery+JSON.stringify(
+										{ "doc" : {"cloud_deal" : "Y"}}
+										);
+						}
+					}
+					console.log("convertToOptyQuery final: "+convertToOptyQuery);
+
+					postdata=convertToOptyQuery+"\n";
+					console.log("postdata : "+convertToOptyQuery);
+
+					$http.post('http://localhost:9200/optysor/opportunityobj/_bulk',postdata)
+					.success(function (data) {
+							console.log("HERE4");
+							console.log("data is success"+JSON.stringify(data));
+							var dataj=JSON.parse(JSON.stringify(data));
+							$scope.deleteMessage= $scope.selection.length + " items converted to Opportunity";
+							$("#showMessage").show().delay(2000).fadeOut();
+							var logQuery = JSON.stringify({
+											"userid" : loginUserId,
+											"update_comments" : 0,
+											"marked_for_delete" : 0,
+											"deleted" : 0
+										});
+//							$scope.logCollab(logQuery);
+							$scope.logChangeOptyData($scope.selection);
+							
+							$scope.selection = [];
+		/*					postdata = JSON.stringify({
+											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
+											"query": {"match_all": {}},"aggs": {
+															"group_by_currency": {
+																 "terms": {
+																	"field": "iso_currency_cd"
+																 }
+															  },
+															  "group_by_oppty_type_code": {
+																  "terms": {
+																	  "field": "oppty_type_code"
+																  }
+															  },
+															  "group_by_opty_theater_name": {
+																  "terms": {
+																	  "field": "opty_theater_name"
+																  }
+															  }
+														  }
+										});
+		*/					
+							postdata = JSON.stringify({
+											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
+											"query": {"match_all": {}},"aggs": {
+															"group_by_complex_deal_flag": {
+																 "terms": {
+																	"field": "complex_deal_flag"
+																 }
+															  },
+															  "group_by_srvc_provider_internal_it_flag": {
+																  "terms": {
+																	  "field": "srvc_provider_internal_it_flag"
+																  }
+															  }
+														  }
+										});
+							
+							resultSize=100;
+							fromCounter=0;
+							toCounter=99;
+							$scope.PostDataResponse =[];
+							$scope.searchString="";
+							$scope.SendData(fromCounter,toCounter,resultSize,postdata);
+
+
+							
+		//					$timeout(function(){$scope.showDataAction();}, 3000);
+							
+					})
+					.error(function (data) {
+							console.log("HERE5");
+							console.log("data is"+JSON.stringify(data));
+							$scope.ResponseDetails = "Data: ";
+					});
+			
+			};
+
+			$scope.deleteIndex = function(){
+				alert("Index deleted");
+			};
 
 
 
@@ -82,10 +222,10 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 							var getChangeStatsQuery = JSON.stringify({
 															"query": 
 																{"term": 
-																	{"changeoptyid.raw" : {"value":optyId}}}
+																	{"optyid.raw" : {"value":optyId}}}
 													});
 							console.log("getChangeStatsQuery"+getChangeStatsQuery);
-							$http.post('http://localhost:9200/optysor/changeoptys/_search',getChangeStatsQuery)
+							$http.post('http://localhost:9200/optysor/changeoptyhistory/_search',getChangeStatsQuery)
 							.success(function (data) {
 									var dataj = JSON.parse(JSON.stringify(data));
 									console.log("Before log insert"+dataj);
@@ -118,7 +258,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 			$scope.getCollabData = function(){
 							
 							var getCollabDataQuery = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}}, "size": 0, 
 									"aggs":{
 										"group_by_userid":{
@@ -194,22 +334,22 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 								if(i==0)
 								{
 									changeOptyDataQuery=JSON.stringify({ 
-											"index" : {"_index" : "optysor", "_type" : "changeoptys"}
+											"index" : {"_index" : "optysor", "_type" : "changeoptyhistory"}
 										})+"\n";
 									changeOptyDataQuery=changeOptyDataQuery+ JSON.stringify({
 											"userid" : loginUserId,
-											"changeoptyid" : selectionArray[i],
+											"optyid" : selectionArray[i],
 											"actiondate" : d
 										})+"\n";
 								}
 								else
 								{
 									changeOptyDataQuery=changeOptyDataQuery+JSON.stringify(
-										{ "index" : {"_index" : "optysor", "_type" : "changeoptys"}}
+										{ "index" : {"_index" : "optysor", "_type" : "changeoptyhistory"}}
 									)+"\n";
 									changeOptyDataQuery=changeOptyDataQuery+ JSON.stringify({
 											"userid" : loginUserId,
-											"changeoptyid" : selectionArray[i],
+											"optyid" : selectionArray[i],
 											"actiondate" : d
 									})+"\n";
 								}
@@ -217,7 +357,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 							console.log("changeoptylog final: "+changeOptyDataQuery);
 
 
-							$http.post('http://localhost:9200/optysor/changeoptys/_bulk',changeOptyDataQuery)
+							$http.post('http://localhost:9200/optysor/changeoptyhistory/_bulk',changeOptyDataQuery)
 							.success(function (data) {
 									console.log("Opty change log inserted");
 							})
@@ -365,7 +505,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 				console.log("$scope.searchString is undefined");
 			   $scope.getCollabData();
 /*	           postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_currency": {
 														 "terms": {
@@ -386,7 +526,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 								});
 */
 				postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 												"group_by_complex_deal_flag": {
 													 "terms": {
@@ -416,7 +556,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 			{	
 				console.log("$scope.searchString is undefined");
 /*	            postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_currency": {
 														 "terms": {
@@ -437,7 +577,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 								});
 */
 				postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 												"group_by_complex_deal_flag": {
 													 "terms": {
@@ -460,7 +600,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 				q = $scope.searchString;
 				if (q.length > 1) {
 /*						postdata = JSON.stringify({
-											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 											"query": {
 												"multi_match": {
 													"fields": ["opty_name","oppty_type_code","opty_theater_name","opty_theater_name"],
@@ -487,7 +627,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 										});
 */
 						postdata = JSON.stringify({
-											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 											"query": {
 												"multi_match": {
 													"fields": ["opty_name","oppty_type_code","opty_theater_name","opty_theater_name"],
@@ -618,7 +758,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 
 					$scope.selection = [];
 /*					postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_currency": {
 														 "terms": {
@@ -639,7 +779,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 								});
 */
 					postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_complex_deal_flag": {
 														 "terms": {
@@ -724,7 +864,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 					
 					$scope.selection = [];
 /*					postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_currency": {
 														 "terms": {
@@ -745,7 +885,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 								});
 */					
 					postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_complex_deal_flag": {
 														 "terms": {
@@ -853,7 +993,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 					console.log("set size: "+$scope.updateCommRecords.size);
 					myArr = [];
 /*					postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_currency": {
 														 "terms": {
@@ -875,7 +1015,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(my
 */
 
 					postdata = JSON.stringify({
-									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd" ],
+									"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 									"query": {"match_all": {}},"aggs": {
 													"group_by_complex_deal_flag": {
 														 "terms": {
