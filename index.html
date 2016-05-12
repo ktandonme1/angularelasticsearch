@@ -7,44 +7,32 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-resource.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.js"></script>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
 	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.2/ui-bootstrap-tpls.js"></script>
+	
 	
 
     <link rel="stylesheet" href="ciscobootstrap/css/bootstrap-theme.css">
-    <!--<apex:stylesheet value="{!URLFOR($Resource.newbootstrap, '/boot/css/bootstrap.css')}" />-->
-    <!--<apex:stylesheet value="{!URLFOR($Resource.ciscobootstrap, '/css/bootstrap-theme.css')}" />-->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-resource.min.js"></script>
     <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.11.0.js"></script>
 
 	<script src="appctrl.js"></script>
+	
+	<script src="bower_components/angular-dragdrop/src/angular-dragdrop.js" type="text/javascript"></script>
 
   <link href="http://cdn.grapecity.com/spreadjs/hosted/css/gcspread.sheets.excel2013white.9.40.20153.0.css" rel="stylesheet" type="text/css"/>
 
-    <script src="http://code.jquery.com/jquery-1.8.2.min.js" type="text/javascript"></script>
 
 
+    <script src="CalendarPopup.js" type="text/javascript"></script>
+	
 
-<!---->
-	<script src="../angular-drag-and-drop-lists.js"></script>
 
-    <!-- Stuff that is only required in this demo (no need to copy) -->
-    <link rel="stylesheet" href="framework/vendor/bootstrap.min.css">
-    <link rel="stylesheet" href="framework/vendor/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="framework/vendor/prism.css">
-    <link rel="stylesheet" href="framework/demo-framework.css">
-    <link rel="stylesheet" type="text/css" href="simple/simple.css" />
-    <link rel="stylesheet" type="text/css" href="nested/nested.css" />
-    <link rel="stylesheet" type="text/css" href="types/types.css" />
-    <link rel="stylesheet" type="text/css" href="advanced/advanced.css" />
-    <link rel="stylesheet" type="text/css" href="multi/multi.css" />
-
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-route.min.js"></script>
-    <script src="framework/vendor/prism.js"></script>
-    <script src="framework/demo-framework.js"></script>
-    <script src="framework/view-source.js"></script>
-    <script src="simple/simple.js"></script>
-<!---->
 <script>
 
 
@@ -73,7 +61,7 @@ table.datasheet {
 }
 td {
     overflow: hidden;
-    text-overflow: ellipsis;  
+    text-overflow: ellipsis; 
 //	white-space: nowrap;
 }
 .datasheet th {
@@ -131,6 +119,47 @@ td {
 	background-color:#F4F4F5;
 }
 
+.heroBtn, .heroBtn:hover {
+    display: inline-block;
+    background: #F8B133;
+    font-size: 15px;
+    color: #1D1D1B;
+    text-decoration: none;
+	height: 30px;
+	width: 190px;
+	text-align: center;
+	font: 14px/1.55 'CiscoSansLight', Arial,'Liberation Sans',FreeSans,sans-serif;
+}
+
+
+.heroBtn:hover {
+    background-color: #20A76E!important;
+	height: 30px;
+	width: 190px;
+	text-align: center;
+	font: 14px/1.55 'CiscoSansLight', Arial,'Liberation Sans',FreeSans,sans-serif;
+}
+.heroBtn {
+    background-color: #22496A!important;
+    color: #fff!important;
+    padding: 5px 40px 5px 40px!important;
+    border-radius: 20px;
+    margin-top: 10px!important;
+}
+.userlist1
+{
+	width: 200px;
+}
+
+.userlist2
+{
+	width: 550px;
+}
+.showhidedetail
+{
+	color:#888888;
+
+}
 </style>
 
 </head>
@@ -162,6 +191,7 @@ if (param)
       <li class="active"><a id="sidebar-hide-btn" ng-show="showSideBar" ng-click="showSideBar=!showSideBar">Hide Collab</a></li>
       <li class="active"><a id="sidebar-hide-btn" ng-show="!showSideBar" ng-click="showSideBar=!showSideBar">Show Collab</a></li>
 <!--      <li><a href="#">Link</a></li>-->
+	  <li><a href="#" class="glyphicon glyphicon-comment" title="Open Spark"></a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
         <ul class="dropdown-menu">
@@ -186,7 +216,9 @@ if (param)
         </form>
     </div>
     <ul class="nav navbar-nav navbar-right">
+
       <li><span><small><i>This index will expire on </i></small><br><a style="color:green" href="#">{{today|date}}</a></span>&nbsp;
+
 	  <span><a title="Extend Index" style="color:green" href="" class="glyphicon glyphicon-calendar"></a></span></li>	
 	  <li><span>&nbsp;&nbsp;&nbsp;</span></li>	
       <li><a title="Export to xls" style="color:green" href="#" class="glyphicon glyphicon-download-alt"></a></li>
@@ -204,12 +236,33 @@ if (param)
   </div><!-- /.navbar-collapse -->
 </nav>
 <div ng-show="showSideBar" class="col-lg-2" id="sidebar">
-<div>&nbsp;&nbsp;&nbsp;&nbsp;
-<div ng-show="showChangeStatsToggle"><b>Change History -</b> <br><ul><li ng-repeat="i in showChangeStats"><i>&nbsp;&nbsp;{{i}}</i></li></ul></div><br><br>
+<div class="heroBtn" ng-click="open()" title="Share Index">Share Index &nbsp;&nbsp;<span class="glyphicon glyphicon-share-alt"> </span>
+</div>
+
+<div ng-show="showModal" close="cancel()">
+      <div class="modal-header">
+          <b>Add Users</b>
+      </div>
+      <div class="modal-body">
+        <i>comma separated list</i><br>
+		<textarea ng-model="shareIndexUser" class="userlist1"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" ng-click="ok()">Okay</button>
+        <button class="btn" ng-click="cancel()">Cancel</button>
+      </div>
+
+</div>
+<hr>
+<div>
+<div ng-show="showChangeStatsToggle"><b>Change History -</b> <br><ul><li ng-repeat="i in showChangeStats"><i>&nbsp;&nbsp;{{i}}</i></li></ul></div>	
 <!--<span class="glyphicon glyphicon-stop" style="color:green" ></span> <a>Comments Updated ({{resultAggOptyTypeCode[0].doc_count}})</a>&nbsp;&nbsp;&nbsp;&nbsp;
 <span class="glyphicon glyphicon-stop" style="color:orange"></span> <a>Marked for Deletion ({{resultAggOptyTheaterName[0].doc_count}})</a>
 -->
-<div><b>Collaboration Stats -</b> 
+<hr>
+<div><b>Collaboration Stats</b>&nbsp;<small>[<span class="showhidedetail" ng-click="showCollabDetails=!showCollabDetails" ng-show="showCollabDetails"><u>Show Details</u></span>
+									  <span class="showhidedetail" ng-click="showCollabDetails=!showCollabDetails" ng-show="!showCollabDetails"><u>Hide Details</u></span>]</small>
+									  	  
 <br><br>
 <table style="margin-left:10px" ng-repeat="j in collabData">
 <tr>
@@ -220,6 +273,33 @@ if (param)
 <tr ng-show="!showCollabDetails"><td>&nbsp;</td></tr>
 </table>
 </div>
+
+<div>
+      <div class="row-fluid">
+        <div class="span6">
+          <div class="btn btn-primary" data-drag="true" ng-model="list1" jqyoui-draggable="{animate: true, placeholder: 'keep'}">{{list1.title}}</div>
+
+        </div>
+        <div class="span6">
+          <div class="thumbnail" data-drop="true" ng-model="list2" jqyoui-droppable="{beforeDrop: 'beforeDrop'}" jqyoui-options="{revertDuration: 1000}" ng-bind="list2.title ? 'Dropped successfully..!' : 'Drop here...'"></div>
+        </div>
+      </div>
+List 2 {{list2.title}}
+ </div>
+
+<script type="text/ng-template" id="myModalContent.html">
+<div class="modal-header">
+    <b>Add Users</b>
+</div>
+      <div class="modal-body">
+        <i>comma separated list</i><br>
+		<textarea class="userlist2"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="ok()">OK</button>
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+    </script>
 </div>
 </div>
 <div ng-class="{'col-lg-10':showSideBar, 'col-lg-12':!showSideBar}" id="mapDiv">
@@ -312,7 +392,7 @@ if (param)
 			
 			<td ng-class="{'update-comment':i._source.complex_deal_flag=='Y','marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}">{{i._score}}
 			</td>
-			<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" style="width:50px" title={{i._source.opty_name}} class="trim-length"><a href="" ng-click="getChangeStats(i._id)" style="text-decoration: none;color:#000000;">{{i._source.opty_name}}</a>
+			<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" style="width:50px" title={{i._source.opty_name}} class="trim-length"><a href="" ng-click="getChangeStats(i._id)" style="text-decoration: none;color:#000000;" data-drag="true" ng-model="i._source.opty_name" jqyoui-draggable="{animate: true, placeholder: 'keep'}" jqyoui-draggable="{index: {{$index}}, animate: true, placeholder: 'keep'}">{{i._source.opty_name}}</a>
 			</td>
 			<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="trim-length">{{i._source.oppty_type_code}}
 			</td>

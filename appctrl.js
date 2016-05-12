@@ -1,4 +1,4 @@
-var myApp = angular.module('myApp',[]);
+var myApp = angular.module('myApp',['ngDragDrop', 'ui.bootstrap']);
 
 myApp.factory('myService', ['$http', function($http) {
       $http.defaults.useXDomain = true;
@@ -53,31 +53,59 @@ myApp.directive('whenScrolled', function() {
     };
 });
 
-myApp.directive('customDatepicker',function($compile,$timeout){
-        return {
-            replace:true,
-            templateUrl:'custom-datepicker.html',
-            scope: {
-                ngModel: '=',
-                dateOptions: '@',
-                dateDisabled: '@',
-                opened: '=',
-                min: '@',
-                max: '@',
-                popup: '@',
-                options: '@',
-                name: '@',
-                id: '@'
-            },
-            link: function($scope, $element, $attrs, $controller){
-
-            }    
+myApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance) {
+        $scope.ok = function () {
+          $modalInstance.close();
         };
-})
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      });
 
 
-myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', function(myService,$scope,$http,$timeout) {
+myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$modal', function(myService,$scope,$http,$timeout,$q, $modal) {
 
+		$scope.shareIndexUser;
+
+		$scope.open = function() {
+		  $scope.showModal = true;
+		};
+
+		$scope.ok = function() {
+
+			  var shareIndexUsers = $scope.shareIndexUser.split(',');
+			  console.log('shareIndexUsers*****'+shareIndexUsers);
+   			  for(var i=0;i<shareIndexUsers.length;i++)
+			  {
+					console.log('shareIndexUsers[i]*****'+shareIndexUsers[i]);
+					var logQuery = JSON.stringify({
+							"userid" : shareIndexUsers[i],
+							"update_comments" : 0,
+							"marked_for_delete" : 0,
+							"deleted" : 0
+						});
+					$scope.logCollab(logQuery);
+				
+			  }
+			  $scope.showModal = false;
+
+		};
+
+		$scope.cancel = function() {
+		  $scope.showModal = false;
+		};
+
+        $scope.list1 = {title: 'Drag and Drop'};
+        $scope.list2 = {};
+        $scope.beforeDrop = function() {
+          var modalInstance = $modal.open({
+            templateUrl: 'myModalContent.html',
+            controller: 'ModalInstanceCtrl'
+          });
+          
+          return modalInstance.result;
+        };
+      
 			$scope.birthDate = '2013-07-23';
 	        $scope.dateOptions = {};
 
