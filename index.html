@@ -41,8 +41,22 @@ $("#sidebar-hide-btn").click(function() {
     $('#mapDiv').removeClass('col-lg-10');
     $('#mapDiv').addClass('col-lg-12');
 });
+
+$(document).on("click", "#addtocart", function() {
+  $(".itemcheck").prop('checked',false);
+  console.log("jquery add to cart");
+});
+
 </script>
 <style>
+.modal-dialog
+{
+	width:1000px;
+}
+#mod-header-cart
+{
+	background-color:#EFF4F6;
+}
 
 ul
 {
@@ -131,7 +145,6 @@ td {
 	font: 14px/1.55 'CiscoSansLight', Arial,'Liberation Sans',FreeSans,sans-serif;
 }
 
-
 .heroBtn:hover {
     background-color: #20A76E!important;
 	height: 30px;
@@ -159,6 +172,21 @@ td {
 {
 	color:#888888;
 
+}
+
+.model-table
+{
+    font-size: 12px;
+    padding-left: 2px;
+	padding-right: 2px;
+}
+
+.glyphicon-shopping-cart
+{
+    color: green;
+    font-size: 20px;
+    margin-top: 10px;
+    text-align: center;
 }
 </style>
 
@@ -191,7 +219,7 @@ if (param)
       <li class="active"><a id="sidebar-hide-btn" ng-show="showSideBar" ng-click="showSideBar=!showSideBar">Hide Collab</a></li>
       <li class="active"><a id="sidebar-hide-btn" ng-show="!showSideBar" ng-click="showSideBar=!showSideBar">Show Collab</a></li>
 <!--      <li><a href="#">Link</a></li>-->
-	  <li><a href="#" class="glyphicon glyphicon-comment" title="Open Spark"></a></li>
+	  <li><a ng-click="openRoom()" class="glyphicon glyphicon-comment" title="Open Spark"></a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
         <ul class="dropdown-menu">
@@ -216,7 +244,72 @@ if (param)
         </form>
     </div>
     <ul class="nav navbar-nav navbar-right">
+		<li class="shoppingcart"><span><a title="Cart" style="color:green" ng-click="getCartData()" data-toggle="modal" href="#myModal" class="glyphicon glyphicon-shopping-cart"></a>({{itemsincart.length}})</span>
 
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" id="mod-header-cart">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Line Items to convert</h4>
+        </div>
+        <div class="modal-body">
+					<table class="modtable">
+					<thead>
+						<th class="model-table">Oppty Name
+						</th>
+						<th class="model-table">Oppty Type
+						</th>
+						<th class="model-table">Oppty Id
+						</th>
+						<th class="model-table">Sales Path Cd
+						</th>
+						<th class="model-table">Oppty Theater
+						</th>
+						<th class="model-table">Created Date
+						</th>
+						<th class="model-table">Sales Territory Name
+						</th>
+						<th class="model-table">ISO Currency
+						</th>
+						<th class="model-table">Comments
+						</th>
+					</thead>
+					<tbody>
+						<tr ng-repeat="i in cartItems">
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.opty_name}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.oppty_type_code}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.opty_id}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.sales_path_cd}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.opty_theater_name}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.create_date}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.sales_terr_name}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.iso_currency_cd}}
+							</td>
+							<td ng-class="{'marked-for-deletion':i._source.srvc_provider_internal_it_flag=='Y','converted-to-opty':i._source.cloud_deal=='Y'}" class="model-table">{{i._source.sales_hierarchy_type_cd}}
+							</td>
+						</tr>
+					</tbody>
+					</table>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="clearCart()">Close</button>
+          <button type="button" ng-click="convertToOpty()" class="btn btn-primary" data-dismiss="modal">Convert to Opportunity</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  </li>
+		<li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
+		<li>&nbsp;&nbsp;&nbsp;&nbsp;</li>
       <li><span><small><i>This index will expire on </i></small><br><a style="color:green" href="#">{{today|date}}</a></span>&nbsp;
 
 	  <span><a title="Extend Index" style="color:green" href="" class="glyphicon glyphicon-calendar"></a></span></li>	
@@ -235,8 +328,9 @@ if (param)
     </ul>
   </div><!-- /.navbar-collapse -->
 </nav>
+
 <div ng-show="showSideBar" class="col-lg-2" id="sidebar">
-<div class="heroBtn" ng-click="open()" title="Share Index">Share Index &nbsp;&nbsp;<span class="glyphicon glyphicon-share-alt"> </span>
+<div><a class="heroBtn" ng-click="open()" title="Share Index">Share Index &nbsp;&nbsp;<span class="glyphicon glyphicon-share-alt"> </span></a>
 </div>
 
 <div ng-show="showModal" close="cancel()">
@@ -251,6 +345,26 @@ if (param)
         <button class="btn btn-success" ng-click="ok()">Okay</button>
         <button class="btn" ng-click="cancel()">Cancel</button>
       </div>
+<!--
+	  		<li class="shoppingcart"><span><a title="Cart" style="color:green" ng-click="getCartData()" data-toggle="modal" href="#myModal" class="glyphicon glyphicon-shopping-cart"></a>({{itemsincart.length}})</span>
+
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" id="mod-header-cart">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Line Items to convert</h4>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="clearCart()">Close</button>
+          <button type="button" ng-click="convertToOpty()" class="btn btn-primary" data-dismiss="modal">Convert to Opportunity</button>
+        </div>
+      </div>
+    </div>
+  </div>
+-->
 
 </div>
 <hr>
@@ -325,7 +439,7 @@ List 2 {{list2.title}}
 		  </a></span> | 
 		<span><a href="#" class="glyphicon glyphicon-trash" style="color:red" title="Deleted selected records" type="Submit" ng-click="delSelectedData();showDeleteMessage=!showDeleteMessage">
 		  </a></span> | 
-		<span><a href="#" class="glyphicon glyphicon-cloud" style="color:blue" title="Convert" type="Submit" ng-click="convertToOpty();showDeleteMessage=!showDeleteMessage">
+		<span><a href="#" class="glyphicon glyphicon-cloud" style="color:blue" title="Convert" type="Submit" ng-click="addToCart();showDeleteMessage=!showDeleteMessage"  id="addtocart">
 		  </a></span>		
 		</th>
 		<th>
@@ -386,7 +500,7 @@ List 2 {{list2.title}}
 
 		<tr ng-repeat="i in PostDataResponse | filter: multifieldSearch">
 <th></th>
-		<td><input type="checkbox" value="{{i._id}}" ng-click="toggleSelection(i._id)" style="{text-align:center}">
+		<td><input type="checkbox" value="{{i._id}}" ng-click="toggleSelection(i._id)" style="{text-align:center}" class="itemcheck">
 <!--<td>{{i._id}}-->
 			</td>
 			

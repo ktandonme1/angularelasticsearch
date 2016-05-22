@@ -1,13 +1,14 @@
 var myApp = angular.module('myApp',['ngDragDrop', 'ui.bootstrap']);
 
 myApp.factory('myService', ['$http', function($http) {
-      $http.defaults.useXDomain = true;
-      delete $http.defaults.headers.common["X-Requested-With"];
+//      $http.defaults.useXDomain = true;
+ //     delete $http.defaults.headers.common["X-Requested-With"];
       $http.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
       $http.defaults.headers.common["Accept"] = "application/json";
       $http.defaults.headers.common["Content-Type"] = "application/json";
-      $http.defaults.headers.common['X-User-Agent'] = "DSEUI";
-      $http.defaults.headers.common['Cache-Control'] = "no-cache";
+//      $http.defaults.headers.common['X-User-Agent'] = "DSEUI";
+//      $http.defaults.headers.common['Cache-Control'] = "no-cache";
+//	  application/json; charset=utf-8
         return {
             apiPostRequest: function (data) {
                 console.log('POSTREQUEST');
@@ -18,7 +19,24 @@ myApp.factory('myService', ['$http', function($http) {
 				console.log('BULKDELETE');
                 var resp = $http.post('http://localhost:9200/optysor/opportunityobj/_bulk', data);
 				return resp;
-            }
+            },
+			apiPostCreateRoom: function (data) {
+//				$http.defaults.headers.common.Authorization = 'Bearer ' +'M2Y2MzY4ODQtYzE0Zi00NTFmLWEwZGYtNDUzN2IxMTJhYmU4Nzc2N2EzNGItMDZi';
+				var resp = $http.post('http://localhost:8080/JAXRS-HelloWorld/rest/helloWorldREST/products',data);
+				return resp;
+			
+			},
+			apiDeleteRoom: function (roomId) {
+				$http.defaults.headers.common.Authorization = 'Bearer ' +'';
+				var resp = $http.delete('https://api.ciscospark.com/v1/rooms/'+roomId);
+				return resp;
+			},
+			apiAddPeople: function (data) {
+				$http.defaults.headers.common.Authorization = 'Bearer ' +'';
+				var resp = $http.post('https://api.ciscospark.com/v1/memberships',data);
+				return resp;
+			}
+			
         }
 }]);
 
@@ -65,10 +83,115 @@ myApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance) {
 
 myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$modal', function(myService,$scope,$http,$timeout,$q, $modal) {
 
+
+
+
 		$scope.shareIndexUser;
+
+		$scope.roomId;
 
 		$scope.open = function() {
 		  $scope.showModal = true;
+		};
+
+
+		$scope.cartItems =[];
+
+		$scope.clearCart = function() {
+				
+				$scope.cartItems = [];
+				
+		
+		};
+
+        $scope.getCartData = function () {
+				
+				if($scope.itemsincart.length>0)
+				{
+					var idCartList;//="["+$scope.itemsincart.toString()+"]";
+					for(var i=0;i<$scope.itemsincart.length;i++)
+					{
+						if(i==0)
+						idCartList = '"'+$scope.itemsincart[i]+'"';
+						else{
+							idCartList=idCartList+',';
+							idCartList = idCartList+ '"'+$scope.itemsincart[i]+'"';
+						}
+						
+
+					}
+
+					var finalidCartList = '['+idCartList+']';
+					
+					console.log("idCartList : "+finalidCartList);
+					var cartDataQuery = '{'+
+													  '"query" : {'+
+														'"filtered" : {'+
+														  '"filter" : {'+
+															'"terms" : {'+
+															  '"_id" : '+finalidCartList+
+															'}'+
+														  '}'+
+														'}'+
+													  '}'+
+													'}';
+						
+						console.log("cartDataQuery : "+cartDataQuery);
+
+						$http.post('http://localhost:9200/optysor/opportunityobj/_search',cartDataQuery)
+							.success(function (data) {
+								var dataj=JSON.parse(JSON.stringify(data));
+
+								var datarequired=dataj.hits;
+		//						$scope.totalRecords=datarequired.total;
+								var postdatatemp = [];
+								console.log("Resultset size: "+datarequired.hits.length);
+								var resultsetlength=datarequired.hits.length;
+								for(var i=0;i<resultsetlength;i++)
+								{
+									$scope.cartItems.push(datarequired.hits[i]);
+								}
+								console.log("cartItems :"+$scope.cartItems);
+								
+					})
+					.error(function (data) {
+							console.log("HERE5");
+							console.log("data is"+JSON.stringify(data));
+							$scope.ResponseDetails = "Data: ";
+					});
+				}
+				else
+				{
+					console.log("No Items in Cart");
+				}
+
+		};
+
+
+		$scope.openRoom = function() {
+		    var data = JSON.stringify({
+										"title": "IB-United_Group"
+									});
+
+			myService.apiPostCreateRoom(data).success(function (resp) {
+					console.log("resp is "+JSON.stringify(resp));
+					$scope.rooomId = resp.id;
+					console.log("$scope.roomId : "+$scope.roomId);
+/*
+				{
+					"id": "Y2lzY29zcGFyazovL3VzL1JPT00vYWQ3NWYyZjAtMWQ3Yi0xMWU2LTgwMWEtMWI1Nzk2MjQzY2U3",
+					"title": "IB-United_Group",
+					"type": "group",
+					"isLocked": false,
+					"lastActivity": "2016-05-19T04:39:30.975Z",
+					"created": "2016-05-19T04:39:30.975Z"
+				}
+*/
+			}).error(function (resp){
+					console.log("Error in creating room :"+resp);
+			})
+					
+		
 		};
 
 		$scope.ok = function() {
@@ -114,16 +237,24 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$mod
 
 			$scope.today=today;
 
+			$scope.addToCart = function(){
+					console.log("added to cart");
+					var incart=$scope.selection
+					$scope.itemsincart=incart;
+					console.log("items in cart as : "+$scope.itemsincart);
+					$scope.selection = [];
+			};
+
 			$scope.convertToOpty = function(){
 
 					var convertToOptyQuery;
-					for(var i=0;i<$scope.selection.length;i++)
+					for(var i=0;i<$scope.itemsincart.length;i++)
 					{
 						if(i==0)
 						{
 								console.log("i==0");
 								convertToOptyQuery=JSON.stringify(
-										{ "update" : {"_id" : $scope.selection[i], "_type" : "opportunityobj", "_index" : "optysor"}}
+										{ "update" : {"_id" : $scope.itemsincart[i], "_type" : "opportunityobj", "_index" : "optysor"}}
 										);
 								convertToOptyQuery=convertToOptyQuery+"\n";
 								convertToOptyQuery=convertToOptyQuery+JSON.stringify(
@@ -134,7 +265,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$mod
 						else
 						{
 								convertToOptyQuery=convertToOptyQuery+"\n"+JSON.stringify(
-										{ "update" : {"_id" : $scope.selection[i], "_type" : "opportunityobj", "_index" : "optysor"}}
+										{ "update" : {"_id" : $scope.itemsincart[i], "_type" : "opportunityobj", "_index" : "optysor"}}
 										);
 								convertToOptyQuery=convertToOptyQuery+"\n";
 								convertToOptyQuery=convertToOptyQuery+JSON.stringify(
@@ -152,7 +283,7 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$mod
 							console.log("HERE4");
 							console.log("data is success"+JSON.stringify(data));
 							var dataj=JSON.parse(JSON.stringify(data));
-							$scope.deleteMessage= $scope.selection.length + " items converted to Opportunity";
+							$scope.deleteMessage= $scope.itemsincart.length + " items converted to Opportunity";
 							$("#showMessage").show().delay(2000).fadeOut();
 							var logQuery = JSON.stringify({
 											"userid" : loginUserId,
@@ -161,9 +292,10 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$mod
 											"deleted" : 0
 										});
 //							$scope.logCollab(logQuery);
-							$scope.logChangeOptyData($scope.selection);
+							$scope.logChangeOptyData($scope.itemsincart);
 							
 							$scope.selection = [];
+							$scope.itemsincart = [];
 		/*					postdata = JSON.stringify({
 											"_source" : ["opty_id", "opty_name", "complex_deal_flag", "oppty_type_code", "sales_path_cd", "opty_theater_name", "create_date", "sales_terr_name", "territory_id", "iso_currency_cd", "sales_hierarchy_type_cd", "complex_deal_flag", "srvc_provider_internal_it_flag", "cloud_deal" ],
 											"query": {"match_all": {}},"aggs": {
@@ -682,6 +814,8 @@ myApp.controller('MyCtrl',['myService','$scope','$http', '$timeout', '$q', '$mod
 		};
 
 		$scope.selection = [];
+
+		$scope.itemsincart = [];
 
 		$scope.toggleSelection = function toggleSelection(oppRecordId) 
 		{
